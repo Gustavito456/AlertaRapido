@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Protótipo | Botão de Emergência</title>
+  <meta name="description" content="Protótipo descartável para trabalho escolar. Hospedagem: GitHub Pages (site estático)." />
+  <style>
+    :root{
+      --bg:#0b1020; --card:#121833; --muted:#8ea0ff; --text:#f3f4ff; --ok:#18c964; --warn:#ffb020; --danger:#ff4d4d; --ink:#0b1020;
+      --accent:#3b82f6; 
+    }
+    body.theme-pm{ --accent:#3b82f6; }
+    body.theme-samu{ --accent:#ef4444; }
+    body.theme-bombeiros{ --accent:#f97316; }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0; font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif;
+      color:var(--text); background:radial-gradient(1200px 800px at 70% -10%, #1a2250 0%, #0b1020 60%);
+    }
+    .wrap{ max-width:980px; margin:0 auto; padding:24px; }
+    .note{
+      text-align:center; font-size:14px; opacity:.8; margin:8px 0 16px;
+    }
+    .card{ background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:18px; box-shadow:0 12px 32px rgba(0,0,0,.35);
+      padding:20px; }
+    .title{ margin:0 0 8px; font-weight:800; letter-spacing:.3px; }
+    .sub{ margin:0 0 20px; color:var(--muted); }
+
+    .row{ display:grid; grid-template-columns:1fr; gap:12px; }
+    @media(min-width:720px){ .row{ grid-template-columns:1fr 1fr; } }
+
+    label{ display:block; font-weight:600; margin-bottom:6px; }
+    input, select, textarea{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:#0f1530; color:var(--text);
+      outline:none; transition:border .2s, box-shadow .2s; }
+    input:focus, select:focus, textarea:focus{ border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in oklab, var(--accent) 30%, transparent); }
+
+    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border-radius:12px; border:1px solid color-mix(in oklab, var(--accent) 50%, white 0%);
+      background:linear-gradient(180deg, color-mix(in oklab, var(--accent) 25%, #0f1530), #0f1530); color:#fff; font-weight:700; cursor:pointer; text-decoration:none; }
+    .btn:hover{ filter:brightness(1.1); }
+    .btn.ghost{ background:transparent; border-color:rgba(255,255,255,.18); }
+    .btn.full{ width:100%; }
+
+    .pill{ display:inline-block; padding:6px 10px; border-radius:99px; font-size:12px; border:1px solid rgba(255,255,255,.16); color:var(--muted); }
+
+    .emergency-cta{ display:flex; align-items:center; justify-content:center; height:280px; border-radius:18px; border:2px dashed rgba(255,255,255,.18); }
+    .panic{
+      display:inline-grid; place-items:center; width:200px; height:200px; border-radius:999px; font-size:18px; font-weight:900; letter-spacing:.4px; text-transform:uppercase; cursor:pointer;
+      background:radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--accent) 50%, white), var(--accent)); border:6px solid rgba(255,255,255,.22);
+      box-shadow:0 20px 40px color-mix(in oklab, var(--accent) 35%, black); transition:transform .1s ease, filter .2s;
+    }
+    .panic:active{ transform:scale(.96); filter:brightness(.95); }
+
+    .grid3{ display:grid; grid-template-columns:1fr; gap:12px; }
+    @media(min-width:720px){ .grid3{ grid-template-columns:repeat(3, 1fr);} }
+
+    .svc{ padding:16px; border-radius:16px; border:1px solid rgba(255,255,255,.14); cursor:pointer; transition:transform .15s ease, filter .2s; }
+    .svc:hover{ transform:translateY(-2px); filter:brightness(1.05); }
+    .svc.pm{ background:linear-gradient(180deg, rgba(59,130,246,.2), rgba(59,130,246,.05)); }
+    .svc.samu{ background:linear-gradient(180deg, rgba(239,68,68,.2), rgba(239,68,68,.05)); }
+    .svc.bom{ background:linear-gradient(180deg, rgba(249,115,22,.2), rgba(249,115,22,.05)); }
+
+    .topbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .profile{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.16); background:#0f1530; }
+    .dot{ width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 3px color-mix(in oklab, var(--accent) 30%, transparent); }
+
+    .table{ width:100%; border-collapse:collapse; }
+    .table th, .table td{ border-bottom:1px solid rgba(255,255,255,.12); padding:10px 8px; text-align:left; font-size:14px; }
+    .table th{ color:var(--muted); font-weight:700; }
+
+    .muted{ color:var(--muted); }
+    .status{ font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.18); }
+    .s-new{ background:#1b2b59; }
+    .s-acc{ background:#173a2a; }
+    .s-done{ background:#33251d; }
+
+    .hidden{ display:none !important; }
+
+    @media print{
+      body{ background:white; color:#000; }
+      .no-print{ display:none !important; }
+      .print-area{ display:block !important; }
+      .print-area table{ width:100%; border-collapse:collapse; }
+      .print-area th, .print-area td{ border:1px solid #000; padding:6px; font-size:12px; }
+      .print-title{ font-weight:800; margin:0 0 8px; }
+    }
+  </style>
+</head>
+<body class="theme-pm">
+  <div class="wrap">
+    <div class="note">Protótipo descartável para trabalho escolar. Hospedado como site estático (GitHub Pages). Nenhum dado real é coletado. Tudo acontece no navegador (LocalStorage).</div>
+
+    <section id="view-login" class="card">
+      <h1 class="title">Acesso gov.br (simulado)</h1>
+      <p class="sub">Para continuar, informe seu <b>nome</b>, escolha seu <b>perfil</b> e digite uma <b>senha</b> qualquer. Tudo será aceito e usado apenas para simulação.</p>
+      <div class="row">
+        <div>
+          <label for="name">Nome completo</label>
+          <input id="name" placeholder="Ex.: Maria Silva" autocomplete="name" />
+        </div>
+        <div>
+          <label for="role">Quem é você?</label>
+          <select id="role">
+            <option value="user">Usuário do serviço</option>
+            <option value="provider">Profissional do serviço de emergência</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label for="password">Senha (qualquer texto será aceito)</label>
+          <input id="password" type="password" placeholder="••••••" />
+        </div>
+        <div style="display:flex; align-items:end; gap:8px;">
+          <button id="btnLogin" class="btn full">Entrar</button>
+        </div>
+      </div>
+      <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="pill">Versão: 1.0 · Front-end puro</span>
+        <button class="btn ghost no-print" id="btnClear">Limpar dados do navegador</button>
+      </div>
+    </section>
+
+    <section id="view-pick-service" class="card hidden">
+      <h2 class="title">Selecione seu serviço</h2>
+      <p class="sub">Escolha a corporação para continuar para a dashboard.</p>
+      <div class="grid3">
+        <div class="svc pm" data-svc="PM">
+          <h3>Polícia Militar</h3>
+          <p class="muted">Patrulhamento e segurança pública.</p>
+        </div>
+        <div class="svc samu" data-svc="SAMU">
+          <h3>SAMU</h3>
+          <p class="muted">Atendimento médico de urgência.</p>
+        </div>
+        <div class="svc bom" data-svc="BOMBEIROS">
+          <h3>Bombeiros</h3>
+          <p class="muted">Combate a incêndios e resgates.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-user" class="card hidden">
+      <div class="topbar">
+        <div>
+          <h2 class="title">Botão de Emergência</h2>
+          <p class="sub" id="userHint">Clique no botão abaixo para solicitar atendimento.</p>
+        </div>
+        <div class="profile no-print"><span class="dot"></span><div>
+          <div id="profileUserName" style="font-weight:700;">—</div>
+          <div class="muted" style="font-size:12px;">Usuário do serviço</div>
+        </div></div>
+      </div>
+
+      <div class="emergency-cta">
+        <button class="panic no-print" id="panicButton">Emergência</button>
+      </div>
+      <div id="serviceChoices" class="grid3 hidden" style="margin-top:16px;">
+        <div class="svc pm" data-svc="PM"><h3>Polícia Militar</h3><p class="muted">Segurança e crime em andamento.</p></div>
+        <div class="svc samu" data-svc="SAMU"><h3>SAMU</h3><p class="muted">Emergência médica.</p></div>
+        <div class="svc bom" data-svc="BOMBEIROS"><h3>Bombeiros</h3><p class="muted">Incêndios e resgates.</p></div>
+      </div>
+
+      <div id="userStatus" style="margin-top:16px;" class="hidden">
+        <div class="card" style="background:#0f1530;">
+          <div id="userStatusText">Avisando autoridades…</div>
+          <div id="userExtra" class="muted" style="margin-top:6px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-dashboard" class="card hidden">
+      <div class="topbar">
+        <div>
+          <h2 class="title">Dashboard — <span id="dashCorp">—</span></h2>
+          <p class="sub">Ocorrências disponíveis, em atendimento e finalizadas.</p>
+        </div>
+        <div class="profile no-print"><span class="dot"></span><div>
+          <div id="profileProvName" style="font-weight:700;">—</div>
+          <div class="muted" style="font-size:12px;" id="profileProvRole">—</div>
+        </div></div>
+      </div>
+
+      <div class="row">
+        <div class="card" style="background:#0f1530;">
+          <div class="pill">Resumo</div>
+          <div style="display:flex; gap:16px; margin-top:10px; flex-wrap:wrap;">
+            <div><div class="muted">Novas</div><div id="kpiNew" style="font-size:28px; font-weight:800;">0</div></div>
+            <div><div class="muted">Em atendimento</div><div id="kpiAcc" style="font-size:28px; font-weight:800;">0</div></div>
+            <div><div class="muted">Finalizadas</div><div id="kpiDone" style="font-size:28px; font-weight:800;">0</div></div>
+          </div>
+        </div>
+        <div class="card" style="background:#0f1530;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <div class="pill">Minhas ocorrências</div>
+            <div class="no-print" style="display:flex; gap:8px;">
+              <button class="btn ghost" id="btnRefresh">Atualizar</button>
+              <button class="btn" id="btnReport">Gerar relatório (PDF)</button>
+            </div>
+          </div>
+          <div style="overflow:auto; margin-top:10px;">
+            <table class="table" id="tblIncidents">
+              <thead>
+                <tr>
+                  <th>#</th><th>Solicitante</th><th>Endereço</th><th>Serviço</th><th>Status</th><th>Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="printArea" class="print-area hidden">
+      <h1 class="print-title">Relatório de Ocorrências — <span id="printCorp">—</span></h1>
+      <div>Agente: <span id="printAgent">—</span></div>
+      <div>Gerado em: <span id="printDate">—</span></div>
+      <br/>
+      <table id="printTable"></table>
+    </section>
+  </div>
+
+  <script>
+    
+    const VIEWS = {
+      login: document.getElementById('view-login'),
+      pickSvc: document.getElementById('view-pick-service'),
+      user: document.getElementById('view-user'),
+      dash: document.getElementById('view-dashboard'),
+    };
+
+    const els = {
+      name: document.getElementById('name'),
+      role: document.getElementById('role'),
+      pwd: document.getElementById('password'),
+      btnLogin: document.getElementById('btnLogin'),
+      btnClear: document.getElementById('btnClear'),
+      panic: document.getElementById('panicButton'),
+      svcChoices: document.getElementById('serviceChoices'),
+      userStatus: document.getElementById('userStatus'),
+      userStatusText: document.getElementById('userStatusText'),
+      userExtra: document.getElementById('userExtra'),
+      profileUserName: document.getElementById('profileUserName'),
+      dashCorp: document.getElementById('dashCorp'),
+      profileProvName: document.getElementById('profileProvName'),
+      profileProvRole: document.getElementById('profileProvRole'),
+      tblInc: document.getElementById('tblIncidents').querySelector('tbody'),
+      kpiNew: document.getElementById('kpiNew'),
+      kpiAcc: document.getElementById('kpiAcc'),
+      kpiDone: document.getElementById('kpiDone'),
+      btnRefresh: document.getElementById('btnRefresh'),
+      btnReport: document.getElementById('btnReport'),
+      printArea: document.getElementById('printArea'),
+      printCorp: document.getElementById('printCorp'),
+      printAgent: document.getElementById('printAgent'),
+      printDate: document.getElementById('printDate'),
+      printTable: document.getElementById('printTable'),
+      userHint: document.getElementById('userHint'),
+    };
+
+    const randomAddresses = [
+      'Rua das Palmeiras, 123 — Centro',
+      'Av. Brasil, 987 — Jardim das Flores',
+      'Rua João do Amaral, 45 — Vila Nova',
+      'Alameda das Acácias, 210 — Santa Luzia',
+      'Travessa do Sol, 12 — Parque Verde',
+      'Rua Projetada B, 88 — Alto da Serra',
+    ];
+
+    const SVC = { PM:'PM', SAMU:'SAMU', BOM:'BOMBEIROS' };
+    const STATUS = { NEW:'new', ACC:'accepted', DONE:'done' };
+
+    function setThemeBySvc(svc){
+      const map = { PM:'theme-pm', SAMU:'theme-samu', BOMBEIROS:'theme-bombeiros' };
+      document.body.classList.remove('theme-pm','theme-samu','theme-bombeiros');
+      document.body.classList.add(map[svc] || 'theme-pm');
+    }
+
+    function readIncidents(){
+      try{ return JSON.parse(localStorage.getItem('incidents') || '[]'); }catch(e){ return []; }
+    }
+    function writeIncidents(list){
+      localStorage.setItem('incidents', JSON.stringify(list));
+      localStorage.setItem('incidents:lastUpdate', Date.now());
+    }
+    function addIncident(i){ const list = readIncidents(); list.push(i); writeIncidents(list); }
+    function updateIncident(id, patch){
+      const list = readIncidents();
+      const idx = list.findIndex(x => x.id === id);
+      if(idx>=0){ list[idx] = { ...list[idx], ...patch }; writeIncidents(list); }
+    }
+
+    function uid(){ return 'INC' + Math.random().toString(36).slice(2,8).toUpperCase(); }
+    function now(){ return new Date().toLocaleString(); }
+
+    function show(view){ Object.values(VIEWS).forEach(v=>v.classList.add('hidden')); view.classList.remove('hidden'); }
+
+    let session = { name:'', role:'user', svc:null, currentIncidentId:null };
+
+    function saveSession(){ localStorage.setItem('session', JSON.stringify(session)); }
+    function loadSession(){ try{ return JSON.parse(localStorage.getItem('session')||'{}'); }catch(e){ return {}; } }
+
+    function resetAll(){
+      localStorage.removeItem('session');
+      location.reload();
+    }
+
+    els.btnLogin.addEventListener('click', () => {
+      const name = els.name.value.trim();
+      const role = els.role.value;
+      if(!name){ alert('Informe seu nome.'); return; }
+      if(!els.pwd.value){ alert('Digite qualquer senha para continuar.'); return; }
+
+      session = { name, role, svc:null, currentIncidentId:null };
+      saveSession();
+
+      if(role === 'provider'){
+        show(VIEWS.pickSvc);
+      }else{
+        els.profileUserName.textContent = name;
+        show(VIEWS.user);
+      }
+    });
+
+    els.btnClear.addEventListener('click', () => {
+      if(confirm('Limpar TODOS os dados salvos (sessão e ocorrências)?')){
+        localStorage.clear();
+        location.reload();
+      }
+    });
+
+    document.querySelectorAll('#view-pick-service .svc').forEach(el=>{
+      el.addEventListener('click', () => {
+        const svc = el.dataset.svc;
+        session.svc = svc;
+        saveSession();
+        setThemeBySvc(svc);
+        openDashboard();
+      });
+    });
+
+    els.panic.addEventListener('click', () => {
+      els.svcChoices.classList.remove('hidden');
+      els.userStatus.classList.add('hidden');
+      els.userExtra.textContent = '';
+      els.userStatusText.textContent = '';
+    });
+
+    document.querySelectorAll('#serviceChoices .svc').forEach(el=>{
+      el.addEventListener('click', () => {
+        const svc = el.dataset.svc;
+        const incident = {
+          id: uid(),
+          requesterName: session.name,
+          address: randomAddresses[Math.floor(Math.random()*randomAddresses.length)],
+          service: svc,
+          status: STATUS.NEW,
+          createdAt: now(),
+          acceptedAt: null,
+          closedAt: null,
+          assignedTo: null,
+          description: null,
+        };
+        addIncident(incident);
+        session.currentIncidentId = incident.id;
+        saveSession();
+
+        els.svcChoices.classList.add('hidden');
+        els.userStatus.classList.remove('hidden');
+        els.userStatusText.textContent = 'Avisado às autoridades ('+svc+').';
+        els.userExtra.textContent = 'Protocolo: '+incident.id+' · Endereço: '+incident.address;
+      });
+    });
+
+    function openDashboard(){
+      els.profileProvName.textContent = session.name;
+      els.profileProvRole.textContent = 'Profissional ('+(session.svc||'—')+')';
+      els.dashCorp.textContent = session.svc || '—';
+      setThemeBySvc(session.svc);
+      show(VIEWS.dash);
+      renderTable();
+    }
+
+    function renderTable(){
+      const list = readIncidents().filter(i => i.service === (session.svc||'') );
+      let newC=0, accC=0, doneC=0;
+      els.tblInc.innerHTML = '';
+      list.forEach(i=>{
+        if(i.status===STATUS.NEW)newC++; else if(i.status===STATUS.ACC)accC++; else if(i.status===STATUS.DONE)doneC++;
+        const tr = document.createElement('tr');
+        const st = i.status===STATUS.NEW?'<span class="status s-new">Nova</span>':i.status===STATUS.ACC?'<span class="status s-acc">Em atendimento</span>':'<span class="status s-done">Finalizada</span>';
+        const actions = actionButtons(i);
+        tr.innerHTML = `<td>${i.id}</td><td>${i.requesterName}</td><td>${i.address}</td><td>${i.service}</td><td>${st}</td><td>${actions}</td>`;
+        els.tblInc.appendChild(tr);
+      });
+      els.kpiNew.textContent = newC; els.kpiAcc.textContent = accC; els.kpiDone.textContent = doneC;
+
+      document.querySelectorAll('[data-action]')?.forEach(btn=>{
+        btn.addEventListener('click', () => handleAction(btn.dataset.action, btn.dataset.id));
+      });
+    }
+
+    function actionButtons(i){
+      if(i.status===STATUS.NEW){
+        return `<button class="btn" data-action="accept" data-id="${i.id}">Aceitar</button>`;
+      }
+      if(i.status===STATUS.ACC){
+        return `<button class="btn" data-action="finish" data-id="${i.id}">Finalizar</button>`;
+      }
+      return `<span class="muted">—</span>`;
+    }
+
+    function handleAction(act, id){
+      if(act==='accept'){
+        updateIncident(id, { status:STATUS.ACC, acceptedAt: now(), assignedTo: session.name });
+        renderTable();
+      } else if(act==='finish'){
+        const desc = prompt('Descreva brevemente a ocorrência:');
+        updateIncident(id, { status:STATUS.DONE, description: desc||'', closedAt: now() });
+        renderTable();
+      }
+    }
+
+    function refreshUserView(){
+      const id = session.currentIncidentId; if(!id) return;
+      const list = readIncidents();
+      const inc = list.find(x=>x.id===id);
+      if(!inc) return;
+
+      if(inc.status===STATUS.NEW){
+        els.userStatusText.textContent = 'Avisado às autoridades ('+inc.service+').';
+        els.userExtra.textContent = 'Protocolo: '+inc.id+' · Endereço: '+inc.address;
+      }
+      if(inc.status===STATUS.ACC){
+        els.userStatusText.textContent = 'Autoridades a caminho.';
+        els.userExtra.textContent = 'Agente: '+(inc.assignedTo||'—')+' · Protocolo: '+inc.id;
+      }
+      if(inc.status===STATUS.DONE){
+        els.userStatusText.textContent = 'Ocorrência finalizada.';
+        els.userExtra.textContent = 'Relato: '+(inc.description||'—');
+      }
+    }
+
+    setInterval(() => { if(!VIEWS.user.classList.contains('hidden')) refreshUserView(); if(!VIEWS.dash.classList.contains('hidden')) renderTable(); }, 1500);
+    window.addEventListener('storage', (e) => {
+      if(e.key && e.key.startsWith('incidents')){
+        if(!VIEWS.user.classList.contains('hidden')) refreshUserView();
+        if(!VIEWS.dash.classList.contains('hidden')) renderTable();
+      }
+    });
+
+    els.btnRefresh.addEventListener('click', renderTable);
+    
+    els.btnReport.addEventListener('click', () => {
+      const corp = session.svc || '—';
+      const agent = session.name || '—';
+      const data = new Date().toLocaleString();
+      const list = readIncidents().filter(i => i.service === corp && i.assignedTo === agent);
+
+      els.printCorp.textContent = corp;
+      els.printAgent.textContent = agent;
+      els.printDate.textContent = data;
+
+      const tb = els.printTable; tb.innerHTML = '';
+      const header = `<tr><th>#</th><th>Solicitante</th><th>Endereço</th><th>Serviço</th><th>Status</th><th>Aberta</th><th>Aceita</th><th>Fechada</th><th>Agente</th><th>Descrição</th></tr>`;
+      const rows = list.map(i => `<tr>
+        <td>${i.id}</td><td>${i.requesterName}</td><td>${i.address}</td><td>${i.service}</td>
+        <td>${i.status}</td><td>${i.createdAt||''}</td><td>${i.acceptedAt||''}</td><td>${i.closedAt||''}</td><td>${i.assignedTo||''}</td><td>${(i.description||'').replace(/</g,'&lt;')}</td>
+      </tr>`).join('');
+      tb.innerHTML = header + rows;
+
+      els.printArea.classList.remove('hidden');
+      window.print();
+      setTimeout(()=> els.printArea.classList.add('hidden'), 500);
+    });
+
+    (function init(){
+      const s = loadSession();
+      if(s && s.name){ session = s; }
+      if(session.role==='provider'){
+        if(session.svc){ setThemeBySvc(session.svc); openDashboard(); }
+        else { show(VIEWS.pickSvc); }
+      } else if(session.role==='user' && session.name){
+        els.profileUserName.textContent = session.name;
+        show(VIEWS.user);
+        if(session.currentIncidentId){
+          els.userStatus.classList.remove('hidden');
+          refreshUserView();
+        }
+      } else {
+        show(VIEWS.login);
+      }
+    })();
+  </script>
+</body>
+</html>
